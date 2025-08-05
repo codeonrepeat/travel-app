@@ -1,264 +1,4 @@
-// import React, { useEffect, useState, useMemo } from 'react';
-// import {
-//   SafeAreaView,
-//   FlatList,
-//   TextInput,
-//   ActivityIndicator,
-//   StyleSheet,
-//   Text,
-//   View,
-//   TouchableOpacity,
-//   Image,
-//   ScrollView,
-// } from 'react-native';
-// import { supabase } from 'utils/supabase';
-// import { useNavigation } from '@react-navigation/native';
-
-// export default function RoleSelect() {
-//   const navigation = useNavigation();
-//   const [profiles, setProfiles] = useState([]);
-//   const [loadingProfiles, setLoadingProfiles] = useState(true);
-//   const [search, setSearch] = useState('');
-//   const [userEmail, setUserEmail] = useState(null);
-//   const [currentUserId, setCurrentUserId] = useState(null);
-//   const [currentUserAvatar, setCurrentUserAvatar] = useState(null);
-
-//   const fallbackAvatar = 'https://via.placeholder.com/100';
-
-//   const fetchUserInfo = async () => {
-//     const { data, error } = await supabase.auth.getUser();
-//     if (!error && data?.user) {
-//       setUserEmail(data.user.email);
-//       setCurrentUserId(data.user.id);
-
-//       const { data: profileData } = await supabase
-//         .from('profiles')
-//         .select('avatar_url')
-//         .eq('id', data.user.id)
-//         .single();
-
-//       if (profileData?.avatar_url) {
-//         setCurrentUserAvatar(profileData.avatar_url);
-//       }
-//     }
-//   };
-
-//   const fetchProfiles = async () => {
-//     setLoadingProfiles(true);
-//     const { data, error } = await supabase
-//       .from('profiles')
-//       .select(
-//         `
-//         id,
-//         username,
-//         location,
-//         bio,
-//         avatar_url,
-//         email,
-//         wardrobe_items (
-//           id,
-//           name,
-//           wardrobe_item_photos (
-//             id,
-//             photo_url
-//           )
-//         )
-//       `
-//       )
-//       .order('updated_at', { ascending: false });
-
-//     if (error) {
-//       console.error('Error fetching profiles:', error);
-//     } else {
-//       setProfiles(data);
-//     }
-//     setLoadingProfiles(false);
-//   };
-
-//   useEffect(() => {
-//     const fetchAll = async () => {
-//       await fetchUserInfo();
-//       await fetchProfiles();
-//     };
-
-//     fetchAll();
-//     const unsubscribe = navigation.addListener('focus', fetchAll);
-//     return unsubscribe;
-//   }, [navigation]);
-
-//   const filteredProfiles = useMemo(() => {
-//     const lowerSearch = search.toLowerCase();
-//     return profiles.filter(
-//       (profile) =>
-//         (profile.username?.toLowerCase().includes(lowerSearch) ||
-//           profile.location?.toLowerCase().includes(lowerSearch) ||
-//           profile.bio?.toLowerCase().includes(lowerSearch)) ??
-//         false
-//     );
-//   }, [search, profiles]);
-
-//   if (loadingProfiles) {
-//     return <ActivityIndicator size="large" style={{ flex: 1 }} />;
-//   }
-
-//   return (
-//     <SafeAreaView style={styles.safe}>
-//       <View style={styles.header}>
-//         <Text style={styles.userEmail}>Hello, {userEmail}</Text>
-//         <TouchableOpacity onPress={() => navigation.navigate('Account')}>
-//           <Image source={{ uri: currentUserAvatar || fallbackAvatar }} style={styles.avatar} />
-//         </TouchableOpacity>
-//       </View>
-
-//       <View style={styles.searchContainer}>
-//         <TextInput
-//           placeholder="Search profiles by name, location, or bio"
-//           value={search}
-//           onChangeText={setSearch}
-//           style={styles.searchInput}
-//           autoCapitalize="none"
-//           autoCorrect={false}
-//           clearButtonMode="while-editing"
-//         />
-//       </View>
-
-//       {filteredProfiles.length === 0 ? (
-//         <View style={styles.emptyContainer}>
-//           <Text style={styles.emptyText}>No profiles found.</Text>
-//         </View>
-//       ) : (
-//         <FlatList
-//           data={filteredProfiles}
-//           keyExtractor={(item) => item.id}
-//           contentContainerStyle={styles.list}
-//           renderItem={({ item }) => {
-//             const wardrobeItems = item.wardrobe_items || [];
-//             const previewPhotos = wardrobeItems
-//               .flatMap((wi) => wi.wardrobe_item_photos || [])
-//               .slice(0, 3);
-
-//             return (
-//               <TouchableOpacity
-//                 style={styles.card}
-//                 onPress={() =>
-//                   navigation.navigate('ProfileDetails', {
-//                     profile: item,
-//                     currentUserId: currentUserId,
-//                   })
-//                 }>
-//                 <View style={styles.profileRow}>
-//                   <Image
-//                     source={{ uri: item.avatar_url || fallbackAvatar }}
-//                     style={styles.avatar}
-//                   />
-//                   <Text style={styles.username}>{item.username || 'No Name'}</Text>
-//                   <Text style={styles.location}>{item.location || 'Unknown Location'}</Text>
-//                 </View>
-
-//                 {previewPhotos.length > 0 && (
-//                   <ScrollView
-//                     horizontal
-//                     style={styles.previewRow}
-//                     showsHorizontalScrollIndicator={false}>
-//                     {previewPhotos.map((photo) => (
-//                       <Image
-//                         key={photo.id}
-//                         source={{ uri: photo.photo_url }}
-//                         style={styles.previewImage}
-//                       />
-//                     ))}
-//                   </ScrollView>
-//                 )}
-//               </TouchableOpacity>
-//             );
-//           }}
-//         />
-//       )}
-//     </SafeAreaView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   safe: { flex: 1, backgroundColor: 'white' },
-//   header: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     paddingHorizontal: 20,
-//     paddingTop: 16,
-//     alignItems: 'center',
-//     paddingBottom: 10,
-//   },
-//   userEmail: {
-//     fontSize: 14,
-//     color: 'gray',
-//   },
-//   avatar: {
-//     width: 40,
-//     height: 40,
-//     borderRadius: 40,
-//     backgroundColor: '#ccc',
-//   },
-//   searchContainer: {
-//     paddingHorizontal: 20,
-//     paddingVertical: 8,
-//   },
-//   searchInput: {
-//     backgroundColor: '#eee',
-//     padding: 10,
-//     borderRadius: 8,
-//     fontSize: 16,
-//   },
-//   list: {
-//     paddingHorizontal: 20,
-//     paddingBottom: 20,
-//   },
-//   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 },
-//   emptyText: { fontSize: 16, color: '#555' },
-//   card: {
-//     padding: 16,
-//     backgroundColor: '#f9f9f9',
-//     borderRadius: 10,
-//     marginBottom: 12,
-//   },
-//   profileRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 10,
-//   },
-//   username: {
-//     fontWeight: '700',
-//     fontSize: 18,
-//   },
-//   location: {
-//     color: '#666',
-//     marginLeft: 'auto',
-//   },
-//   previewRow: {
-//     marginTop: 12,
-//     flexDirection: 'row',
-//     gap: 8,
-//   },
-//   previewImage: {
-//     width: 120,
-//     height: 120,
-//     borderRadius: 6,
-//     marginRight: 8,
-//     backgroundColor: '#ddd',
-//   },
-// });
-
-/**
- * RoleSelect.tsx
- *
- * Updates:
- * - Notification fetching moved to run only after currentUserId is loaded
- * - Added listener to refresh unread notification status on screen focus
- * - Displays red dot badge over user avatar when unread notifications exist
- * - Fixes timing issue where notification query ran before currentUserId was set
- * - Minor type annotations added for clarity
- *
- * These changes ensure accurate and timely display of unread notification status in the UI.
- */ import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -278,10 +18,13 @@ import { supabase } from 'utils/supabase';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import { connectStreamUser } from 'utils/connectStreamUser';
+
 export default function RoleSelect() {
   const navigation = useNavigation();
 
   // User info
+  const [username, setUsername] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
@@ -306,6 +49,26 @@ export default function RoleSelect() {
   const [showUploadHint, setShowUploadHint] = useState(false);
 
   useEffect(() => {
+    if (!currentUserId) return;
+
+    const connectUser = async () => {
+      try {
+        console.log('Connecting user to Stream:', currentUserId);
+        await connectStreamUser({
+          id: currentUserId,
+          name: userEmail || 'User',
+          image: currentUserAvatar || undefined,
+        });
+        console.log('Stream user connected successfully');
+      } catch (error) {
+        console.error('Error connecting Stream user:', error);
+      }
+    };
+
+    connectUser();
+  }, [currentUserId]);
+
+  useEffect(() => {
     const fetchUserInfo = async () => {
       const { data, error } = await supabase.auth.getUser();
       if (!error && data?.user) {
@@ -314,12 +77,15 @@ export default function RoleSelect() {
 
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('avatar_url')
+          .select('avatar_url,username')
           .eq('id', data.user.id)
           .single();
 
         if (profileData?.avatar_url) {
           setCurrentUserAvatar(profileData.avatar_url);
+        }
+        if (profileData?.username) {
+          setUsername(profileData.username); // 👈 store it in state
         }
       }
     };
@@ -472,7 +238,7 @@ export default function RoleSelect() {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Welcome back,</Text>
-          <Text style={styles.userEmail}>{userEmail || 'Traveler'}</Text>
+          <Text style={styles.userEmail}>{username || 'Traveler'}</Text>
         </View>
         <TouchableOpacity
           style={styles.avatarWrapper}
@@ -625,6 +391,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    justifyContent: 'space-between',
+    paddingRight: 10,
   },
   greeting: {
     fontSize: 14,

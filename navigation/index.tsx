@@ -29,6 +29,14 @@ import DeliveryInfoScreen from 'screens/DeliveryInfo';
 import FinalChecklistScreen from 'screens/FinalChecklist';
 import EditProfile from 'screens/EditProfile';
 import MyTrip from 'screens/MyTrip';
+import InboxScreen from 'screens/InboxScreen';
+import DirectMessageScreen from 'screens/DirectMessageScreen';
+import Step1BasicInfo from 'screens/Onboarding/Step1BasicInfo';
+import Step2StyleTags from 'screens/Onboarding/Step2StyleTags';
+import Step3Location from 'screens/Onboarding/Step3Location';
+import Step4Sizing from 'screens/Onboarding/Step4Sizing';
+import ProfileSummary from 'screens/Onboarding/ProfileSummary';
+import Onboarding from 'screens/Onboarding/Onboarding';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -56,6 +64,14 @@ export type RootStackParamList = {
   DeliveryInfo: undefined;
   FinalChecklist: undefined;
   MyTrip: undefined;
+  InboxScreen: undefined;
+  DirectMessageScreen: undefined;
+  Step1BasicInfo: undefined;
+  Step2StyleTags: undefined;
+  Step3Location: undefined;
+  Step4Sizing: undefined;
+  ProfileSummary: undefined;
+  Onboarding: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -114,7 +130,10 @@ export default function RootStack() {
           <Stack.Screen name="Auth" component={AuthScreen} />
         ) : (
           <>
+            <Stack.Screen name="Onboarding" component={Onboarding} />
+
             <Stack.Screen name="RoleSelect" component={RoleSelect} />
+            <Stack.Screen name="ProfileSetup" component={ProfileSetup} />
             <Stack.Screen name="LenderScreen" component={LenderScreen} />
             <Stack.Screen name="DetailsScreen" component={DetailsScreen} />
             <Stack.Screen name="LenderRequestScreen" component={LenderRequestsScreen} />
@@ -127,7 +146,6 @@ export default function RootStack() {
             <Stack.Screen name="Account" component={Account} />
             <Stack.Screen name="WardrobeEditor" component={WardrobeItemEditor} />
             <Stack.Screen name="ProfileDetails" component={ProfileDetails} />
-            <Stack.Screen name="ProfileSetup" component={ProfileSetup} />
             <Stack.Screen name="WardrobeItemDetails" component={WardrobeItemDetails} />
             <Stack.Screen name="LenderAvailability" component={LenderAvailabilitySection} />
             <Stack.Screen name="TripCartScreen" component={TripCartScreen} />
@@ -138,6 +156,8 @@ export default function RootStack() {
             <Stack.Screen name="FinalChecklist" component={FinalChecklistScreen} />
             <Stack.Screen name="EditProfile" component={EditProfile} />
             <Stack.Screen name="MyTrip" component={MyTrip} />
+            <Stack.Screen name="InboxScreen" component={InboxScreen} />
+            <Stack.Screen name="DirectMessageScreen" component={DirectMessageScreen} />
           </>
         )}
       </Stack.Navigator>

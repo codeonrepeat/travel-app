@@ -35,24 +35,47 @@ export default function AuthScreen({ navigation }) {
     if (profileComplete) {
       navigation.navigate('RoleSelect');
     } else {
-      navigation.navigate('ProfileSetup');
+      navigation.navigate('Onboarding');
     }
   };
 
+  // const signUp = async () => {
+  //   const { data, error } = await supabase.auth.signUp({ email, password });
+  //   if (error) return setError(error.message);
+
+  //   // Insert profile immediately
+  //   await supabase.from('profiles').insert({ id: data.user.id, email });
+
+  //   // Wait for auth session to become active
+  //   const {
+  //     data: { session },
+  //   } = await supabase.auth.getSession();
+
+  //   if (!session) {
+  //     // You could show a message or redirect to sign in
+  //     return setError('Please check your email to confirm your account before logging in.');
+  //   }
+
+  //   const profileComplete = await checkUserProfile();
+
+  //   if (profileComplete) {
+  //     navigation.navigate('RoleSelect');
+  //   } else {
+  //     navigation.navigate('ProfileSetup');
+  //   }
+  // };
+
   const signUp = async () => {
     const { data, error } = await supabase.auth.signUp({ email, password });
+
     if (error) return setError(error.message);
 
-    // Insert profile immediately
     await supabase.from('profiles').insert({ id: data.user.id, email });
 
-    // Wait for auth session to become active
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    // Use session from signUp response (may be null if confirmation required)
+    const session = data.session;
 
     if (!session) {
-      // You could show a message or redirect to sign in
       return setError('Please check your email to confirm your account before logging in.');
     }
 
@@ -61,7 +84,7 @@ export default function AuthScreen({ navigation }) {
     if (profileComplete) {
       navigation.navigate('RoleSelect');
     } else {
-      navigation.navigate('ProfileSetup');
+      navigation.navigate('Onboarding');
     }
   };
 

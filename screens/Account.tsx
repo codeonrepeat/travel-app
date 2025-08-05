@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from 'utils/supabase';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import Header from 'components/Header';
 
 export default function Account() {
@@ -81,6 +81,11 @@ export default function Account() {
         leftButton={
           <TouchableOpacity onPress={() => navigation.navigate('RoleSelect')}>
             <MaterialCommunityIcons name="home" size={28} color="black" />
+          </TouchableOpacity>
+        }
+        rightComponent={
+          <TouchableOpacity onPress={() => navigation.navigate('InboxScreen')} style={{ flex: 1 }}>
+            <Ionicons name="chatbox-ellipses-outline" size={28} color="black" />
           </TouchableOpacity>
         }
       />

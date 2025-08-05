@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import * as Location from 'expo-location';
+
 import { supabase } from 'utils/supabase';
 import { Buffer } from 'buffer';
 import { useNavigation } from '@react-navigation/native';
@@ -56,6 +58,51 @@ export default function ProfileSetup({ route }) {
 
     getUserId();
   }, []);
+
+  // useEffect(() => {
+  //   const getUserId = async () => {
+  //     if (route?.params?.userId && route?.params?.email) {
+  //       setUserId(route.params.userId);
+  //       setEmail(route.params.email);
+  //     } else {
+  //       const {
+  //         data: { user },
+  //         error,
+  //       } = await supabase.auth.getUser();
+  //       if (error || !user) {
+  //         Alert.alert('Error', 'Unable to get user ID.');
+  //         return;
+  //       }
+
+  //       setUserId(user.id);
+  //       setEmail(user.email);
+  //     }
+
+  //     // 👇 Add location detection here
+  //     detectLocation();
+  //   };
+
+  //   const detectLocation = async () => {
+  //     try {
+  //       const { status } = await Location.requestForegroundPermissionsAsync();
+  //       if (status !== 'granted') return;
+
+  //       const coords = await Location.getCurrentPositionAsync({});
+  //       const [place] = await Location.reverseGeocodeAsync({
+  //         latitude: coords.coords.latitude,
+  //         longitude: coords.coords.longitude,
+  //       });
+
+  //       if (place?.city) {
+  //         setLocation(place.city);
+  //       }
+  //     } catch (e) {
+  //       console.warn('Could not auto-detect location:', e.message);
+  //     }
+  //   };
+
+  //   getUserId();
+  // }, []);
 
   const pickAvatar = async () => {
     if (!userId) {
@@ -155,8 +202,8 @@ export default function ProfileSetup({ route }) {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <Text style={styles.welcome}>Welcome!</Text>
           <Text style={styles.instructions}>
-            Let's set up your profile so others can get to know your style. Add a photo, a short
-            bio, and where you're based.
+            Let’s set up your profile so others can get to know you. Add a photo, describe your
+            go-to look or favorite styles, and share your location.
           </Text>
 
           <TouchableOpacity onPress={pickAvatar} style={styles.avatarContainer}>
@@ -181,7 +228,7 @@ export default function ProfileSetup({ route }) {
             onChangeText={setUsername}
           />
 
-          <Text style={styles.label}>Bio</Text>
+          <Text style={styles.label}>Go to look / Favorite styles</Text>
           <TextInput
             style={styles.input}
             placeholder="e.g. I love bold colors and clean cuts."

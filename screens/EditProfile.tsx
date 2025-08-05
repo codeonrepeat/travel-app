@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -26,9 +27,13 @@ export default function EditProfile() {
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState('');
+
+  const styleOptions = ['Minimalist', 'Trendy', 'Sporty', 'Vintage', 'Elegant', 'Boho'];
 
   useEffect(() => {
     async function fetchProfile() {
@@ -53,6 +58,7 @@ export default function EditProfile() {
         setUsername(profileData.username || '');
         setBio(profileData.bio || '');
         setLocation(profileData.location || '');
+        setSelectedTags(profileData.style_tags || []);
       } catch (e) {
         Alert.alert('Error', e.message);
       } finally {
@@ -125,6 +131,7 @@ export default function EditProfile() {
         avatar_url: avatarUrl,
         bio,
         location,
+        style_tags: selectedTags,
         updated_at: new Date(),
       };
 
@@ -142,6 +149,12 @@ export default function EditProfile() {
     }
   };
 
+  const toggleTag = (tag) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -156,21 +169,17 @@ export default function EditProfile() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          {/* Back button */}
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
 
-          {/* Screen Title */}
           <Text style={styles.title}>Edit Your Profile</Text>
 
-          {/* Description text for guidance */}
           <Text style={styles.description}>
-            Update your avatar, username, bio, and location so others can learn more about you. A
-            complete profile helps build trust between lenders and borrowers.
+            Update your avatar, username, bio, location, and style so others can learn more about
+            you.
           </Text>
 
-          {/* Avatar Upload Section */}
           <TouchableOpacity onPress={pickAvatar} style={styles.avatarContainer} disabled={saving}>
             {saving && !avatarUrl ? (
               <ActivityIndicator size="large" color="#000" />
@@ -185,7 +194,6 @@ export default function EditProfile() {
             </Text>
           </TouchableOpacity>
 
-          {/* Username Field */}
           <Text style={styles.label}>Username</Text>
           <TextInput
             style={styles.input}
@@ -193,11 +201,7 @@ export default function EditProfile() {
             onChangeText={setUsername}
             placeholder="Enter your username"
           />
-          <Text style={styles.fieldDescription}>
-            This is your public name. Keep it simple and recognizable.
-          </Text>
 
-          {/* Bio Field */}
           <Text style={styles.label}>Bio</Text>
           <TextInput
             style={styles.input}
@@ -206,11 +210,7 @@ export default function EditProfile() {
             placeholder="Tell us something about you"
             multiline
           />
-          <Text style={styles.fieldDescription}>
-            Share a few lines about your interests, style, or what makes you unique.
-          </Text>
 
-          {/* Location Field */}
           <Text style={styles.label}>Location</Text>
           <TextInput
             style={styles.input}
@@ -218,11 +218,14 @@ export default function EditProfile() {
             onChangeText={setLocation}
             placeholder="Your city"
           />
-          <Text style={styles.fieldDescription}>
-            This helps show where you're lending or borrowing from.
-          </Text>
 
-          {/* Save Button */}
+          <Text style={styles.label}>Style Tags</Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.tagPicker}>
+            <Text style={styles.tagText}>
+              {selectedTags.length > 0 ? selectedTags.join(', ') : 'Select your style'}
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.button, { backgroundColor: saving ? '#ccc' : '#000' }]}
             onPress={handleSave}
@@ -231,6 +234,36 @@ export default function EditProfile() {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Modal for style tag selection */}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Pick your style</Text>
+            <View style={styles.tagGrid}>
+              {styleOptions.map((tag) => (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => toggleTag(tag)}
+                  style={[styles.tagButton, selectedTags.includes(tag) && styles.tagSelected]}>
+                  <Text
+                    style={[
+                      styles.tagButtonText,
+                      selectedTags.includes(tag) && styles.tagButtonTextSelected,
+                    ]}>
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -247,18 +280,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
   },
-  backButtonText: {
-    fontSize: 16,
-    color: '#333',
-  },
+  backButtonText: { fontSize: 16, color: '#333' },
   title: { fontSize: 28, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
-  description: {
-    fontSize: 15,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 8,
-  },
+  description: { fontSize: 15, color: '#666', textAlign: 'center', marginBottom: 20 },
   avatarContainer: { alignItems: 'center', marginBottom: 20 },
   avatar: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#eee' },
   avatarText: { color: '#555', marginTop: 8 },
@@ -271,12 +295,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 16,
   },
-  fieldDescription: {
-    fontSize: 13,
-    color: '#888',
-    marginTop: 4,
-    marginBottom: 8,
-  },
   button: {
     marginTop: 32,
     paddingVertical: 14,
@@ -284,4 +302,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  tagPicker: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 4,
+  },
+  tagText: { fontSize: 16, color: '#555' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    minHeight: 300,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  tagGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  tagButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    margin: 4,
+  },
+  tagButtonText: { fontSize: 14, color: '#333' },
+  tagSelected: { backgroundColor: '#000', borderColor: '#000' },
+  tagButtonTextSelected: { color: '#fff' },
+  modalCloseButton: {
+    marginTop: 24,
+    alignSelf: 'center',
+    backgroundColor: '#000',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  modalCloseText: { color: '#fff', fontWeight: '600', fontSize: 16 },
 });

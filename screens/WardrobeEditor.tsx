@@ -389,9 +389,14 @@ export default function WardrobeBuilder({ route, navigation }) {
               keyboardType="numeric"
             />
 
-            <Text style={styles.tipText}>
+            {/* <Text style={styles.tipText}>
               Suggested price range for {categoryValue || 'this category'}:{' '}
               {priceRanges[categoryValue] || priceRanges.Default}
+            </Text> */}
+            <Text style={styles.tipText}>
+              {`Suggested price range for ${categoryValue || 'this category'}: ${
+                priceRanges[categoryValue] || priceRanges.Default
+              }`}
             </Text>
 
             {estimatedEarnings() && (
