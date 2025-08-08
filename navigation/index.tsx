@@ -13,7 +13,7 @@ import BorrowerRequestsScreen from 'screens/BorrowerRequest';
 import FakePaymentScreen from 'screens/FakePaymentScreen';
 import ProfileScreen from 'screens/ProfileScreen';
 import SuccessScreen from 'screens/SuccessScreen';
-import TransactionSummeryScreen from 'screens/TransactionSummeryScreen';
+import TransactionSummaryScreen from 'screens/TransactionSummaryScreen';
 import UserBuilder from 'screens/UserBuilder';
 import Account from 'screens/Account';
 import WardrobeItemEditor from 'screens/WardrobeEditor';
@@ -37,6 +37,7 @@ import Step3Location from 'screens/Onboarding/Step3Location';
 import Step4Sizing from 'screens/Onboarding/Step4Sizing';
 import ProfileSummary from 'screens/Onboarding/ProfileSummary';
 import Onboarding from 'screens/Onboarding/Onboarding';
+import AuthLoading from 'screens/AuthLoading';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -72,6 +73,7 @@ export type RootStackParamList = {
   Step4Sizing: undefined;
   ProfileSummary: undefined;
   Onboarding: undefined;
+  AuthLoading: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -127,11 +129,14 @@ export default function RootStack() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
+          // Show only Auth screen if NOT signed in
           <Stack.Screen name="Auth" component={AuthScreen} />
         ) : (
+          // User is authenticated — show the rest
           <>
-            <Stack.Screen name="Onboarding" component={Onboarding} />
+            <Stack.Screen name="AuthLoading" component={AuthLoading} />
 
+            <Stack.Screen name="Onboarding" component={Onboarding} />
             <Stack.Screen name="RoleSelect" component={RoleSelect} />
             <Stack.Screen name="ProfileSetup" component={ProfileSetup} />
             <Stack.Screen name="LenderScreen" component={LenderScreen} />
@@ -141,7 +146,7 @@ export default function RootStack() {
             <Stack.Screen name="FakePaymentScreen" component={FakePaymentScreen} />
             <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
             <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
-            <Stack.Screen name="TransactionSummaryScreen" component={TransactionSummeryScreen} />
+            <Stack.Screen name="TransactionSummaryScreen" component={TransactionSummaryScreen} />
             <Stack.Screen name="UserBuilder" component={UserBuilder} />
             <Stack.Screen name="Account" component={Account} />
             <Stack.Screen name="WardrobeEditor" component={WardrobeItemEditor} />

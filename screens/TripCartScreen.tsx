@@ -14,6 +14,7 @@ import {
 import { supabase } from 'utils/supabase';
 import { useTripCart } from 'context/TripCartContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Header from 'components/Header';
 
 export default function TripCartScreen({ route, navigation }) {
   const { tripCity, tripStartDate, tripEndDate, currentUserId } = route.params;
@@ -21,9 +22,7 @@ export default function TripCartScreen({ route, navigation }) {
 
   const [loading, setLoading] = useState(false);
   const [paymentOption, setPaymentOption] = useState<'now' | 'later'>('now');
-  const [deliveryMethod, setDeliveryMethod] = useState<'meetup' | 'hotel_dropoff' | 'pickup'>(
-    'meetup'
-  );
+  const [deliveryMethod, setDeliveryMethod] = useState(null);
 
   // Calculate the number of days between start and end (inclusive)
   const tripDays = useMemo(() => {
@@ -45,6 +44,11 @@ export default function TripCartScreen({ route, navigation }) {
   const handleSubmit = async () => {
     if (tripCart.length === 0) {
       Alert.alert('Cart is empty', 'Please add items to your cart before submitting.');
+      return;
+    }
+
+    if (!deliveryMethod) {
+      Alert.alert('Please select a delivery method');
       return;
     }
 
@@ -131,7 +135,16 @@ export default function TripCartScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.screenTitle}>Your Trip Cart</Text>
+      <Header
+        title="TripCartScreen.tsx"
+        leftButton={
+          <MaterialCommunityIcons
+            onPress={() => navigation.goBack()}
+            name="arrow-left-circle"
+            size={30}
+          />
+        }
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Trip Info */}

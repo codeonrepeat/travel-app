@@ -13,9 +13,10 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { supabase } from 'utils/supabase';
-import { FontAwesome6, Ionicons } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTripCart } from 'context/TripCartContext';
 import { streamClient } from 'utils/streamClient';
+import Header from 'components/Header';
 
 const screenWidth = Dimensions.get('window').width;
 const itemCardWidth = (screenWidth - 48) / 2;
@@ -132,6 +133,17 @@ export default function ProfileDetails() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <Header
+        title="ProfileDetails.tsx"
+        leftButton={
+          <MaterialCommunityIcons
+            onPress={() => navigation.goBack()}
+            name="arrow-left-circle"
+            size={30}
+            style={{ opacity: 0.3 }}
+          />
+        }
+      />
       <View style={{ flex: 1 }}>
         {/* Fixed Top Section */}
         <View style={styles.topContainer}>

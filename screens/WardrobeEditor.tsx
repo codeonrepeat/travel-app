@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
+
+import { BottomSheetModal, BottomSheetView, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import {
   View,
   Text,
@@ -12,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Button,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -22,6 +26,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Sizing from 'components/Sizing';
 
 const priceRanges = {
   Tops: '$5 – $10',
@@ -37,6 +42,7 @@ const RENTAL_DAYS = 7;
 export default function WardrobeBuilder({ route, navigation }) {
   const userId = route.params?.userId;
   const itemId = route.params?.itemId || null;
+  const snapPoints = useMemo(() => ['100%'], []);
 
   const [name, setName] = useState('');
   const [size, setSize] = useState('');
@@ -272,150 +278,195 @@ export default function WardrobeBuilder({ route, navigation }) {
     setImages(newImages);
   };
 
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  // callbacks
+  const handlePresentModalPress = useCallback(() => {
+    console.log('🔥 Trying to present modal...');
+    console.log('Ref is:', bottomSheetModalRef.current);
+    bottomSheetModalRef.current?.present();
+  }, []);
+
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('📐 Sheet snapped to index:', index);
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
-        {/* Header with Back Button and Title */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={28} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.title}>{itemId ? 'Edit Wardrobe Item' : 'Add Wardrobe Item'}</Text>
-          <View style={{ width: 28 }} /> {/* Placeholder for spacing */}
-        </View>
+      <BottomSheetModalProvider>
+        <SafeAreaView style={styles.container}>
+          {/* Header with Back Button and Title */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <MaterialCommunityIcons name="arrow-left" size={28} color="black" />
+            </TouchableOpacity>
+            <Text style={styles.title}>{itemId ? 'Edit Wardrobe Item' : 'Add Wardrobe Item'}</Text>
+            <View style={{ width: 28 }} /> {/* Placeholder for spacing */}
+          </View>
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={{ padding: 20 }}>
-            {/* Image Upload Section */}
-            <View style={styles.imageUploadRow}>
-              <TouchableOpacity onPress={pickImages} style={styles.iconButton}>
-                <MaterialCommunityIcons name="image-multiple" size={32} color="#555" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={takePhoto} style={styles.iconButton}>
-                <MaterialCommunityIcons name="camera" size={32} color="#555" />
-              </TouchableOpacity>
-              <Text style={styles.imageCount}>{images.length} / 5 Images</Text>
-            </View>
-
-            {images.length === 0 && (
-              <Text style={styles.hintText}>Add photos first — up to 5 images</Text>
-            )}
-
-            <DraggableFlatList
-              horizontal
-              data={images}
-              keyExtractor={(_, index) => `image-${index}`}
-              onDragEnd={({ data }) => setImages(data)}
-              renderItem={({ item, index, drag }) => (
-                <TouchableOpacity
-                  onLongPress={drag}
-                  style={styles.thumbnailWrapper}
-                  disabled={uploading}>
-                  <Image source={{ uri: item.uri }} style={styles.thumbnail} />
-                  <View style={styles.deleteIcon}>
-                    <TouchableOpacity onPress={() => deleteImage(index)}>
-                      <MaterialCommunityIcons name="close-circle" size={24} color="red" />
-                    </TouchableOpacity>
-                  </View>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ padding: 20 }}>
+              {/* Image Upload Section */}
+              <View style={styles.imageUploadRow}>
+                <TouchableOpacity onPress={pickImages} style={styles.iconButton}>
+                  <MaterialCommunityIcons name="image-multiple" size={32} color="#555" />
                 </TouchableOpacity>
+                <TouchableOpacity onPress={takePhoto} style={styles.iconButton}>
+                  <MaterialCommunityIcons name="camera" size={32} color="#555" />
+                </TouchableOpacity>
+                <Text style={styles.imageCount}>{images.length} / 5 Images</Text>
+              </View>
+
+              {images.length === 0 && (
+                <Text style={styles.hintText}>Add photos first — up to 5 images</Text>
               )}
-              contentContainerStyle={{ paddingVertical: 10 }}
-            />
 
-            {/* Form Inputs */}
-            <TextInput
-              style={styles.input}
-              placeholder="Name"
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-            />
-
-            <View style={{ zIndex: 3000, marginBottom: 16 }}>
-              <DropDownPicker
-                open={categoryOpen}
-                value={categoryValue}
-                items={categoryItems}
-                setOpen={setCategoryOpen}
-                setValue={setCategoryValue}
-                setItems={setCategoryItems}
-                placeholder="Select Category"
-                style={styles.dropdown}
-                dropDownContainerStyle={styles.dropDownContainer}
-                containerStyle={{ height: 40 }}
-                textStyle={{ fontSize: 14 }}
+              <DraggableFlatList
+                horizontal
+                data={images}
+                keyExtractor={(_, index) => `image-${index}`}
+                onDragEnd={({ data }) => setImages(data)}
+                renderItem={({ item, index, drag }) => (
+                  <TouchableOpacity
+                    onLongPress={drag}
+                    style={styles.thumbnailWrapper}
+                    disabled={uploading}>
+                    <Image source={{ uri: item.uri }} style={styles.thumbnail} />
+                    <View style={styles.deleteIcon}>
+                      <TouchableOpacity onPress={() => deleteImage(index)}>
+                        <MaterialCommunityIcons name="close-circle" size={24} color="red" />
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                contentContainerStyle={{ paddingVertical: 10 }}
               />
-            </View>
 
-            <View style={{ zIndex: 2000, marginBottom: 16 }}>
-              <DropDownPicker
-                open={conditionOpen}
-                value={conditionValue}
-                items={conditionItems}
-                setOpen={setConditionOpen}
-                setValue={setConditionValue}
-                setItems={setConditionItems}
-                placeholder="Select Condition"
-                style={styles.dropdown}
-                dropDownContainerStyle={styles.dropDownContainer}
-                containerStyle={{ height: 40 }}
-                textStyle={{ fontSize: 14 }}
+              {/* Form Inputs */}
+              <TextInput
+                style={styles.input}
+                placeholder="Name"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
               />
-            </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Size"
-              value={size}
-              onChangeText={setSize}
-              autoCapitalize="characters"
-            />
+              <View style={{ zIndex: 3000, marginBottom: 16 }}>
+                <DropDownPicker
+                  open={categoryOpen}
+                  value={categoryValue}
+                  items={categoryItems}
+                  setOpen={setCategoryOpen}
+                  setValue={setCategoryValue}
+                  setItems={setCategoryItems}
+                  placeholder="Select Category"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropDownContainer}
+                  containerStyle={{ height: 40 }}
+                  textStyle={{ fontSize: 14 }}
+                />
+              </View>
 
-            <TextInput
-              style={[styles.input, { height: 80 }]}
-              placeholder="Description"
-              multiline
-              value={description}
-              onChangeText={setDescription}
-            />
+              <View style={{ zIndex: 2000, marginBottom: 16 }}>
+                <DropDownPicker
+                  open={conditionOpen}
+                  value={conditionValue}
+                  items={conditionItems}
+                  setOpen={setConditionOpen}
+                  setValue={setConditionValue}
+                  setItems={setConditionItems}
+                  placeholder="Select Condition"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropDownContainer}
+                  containerStyle={{ height: 40 }}
+                  textStyle={{ fontSize: 14 }}
+                />
+              </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Price Per Day (e.g. 15)"
-              value={pricePerDay}
-              onChangeText={setPricePerDay}
-              keyboardType="numeric"
-            />
+              {/* <TextInput
+                style={styles.input}
+                placeholder="Size"
+                value={size}
+                onChangeText={setSize}
+                autoCapitalize="characters"
+              /> */}
 
-            {/* <Text style={styles.tipText}>
+              <TouchableOpacity
+                onPress={handlePresentModalPress}
+                style={{
+                  height: 50,
+                  borderRadius: 8,
+                  borderColor: 'lightgray',
+                  borderWidth: 1,
+                  paddingHorizontal: 12,
+                  justifyContent: 'center',
+                  marginBottom: 10,
+                }}>
+                <Text style={{ fontSize: 14 }}>{size ? `Size: ${size}` : 'Select Size'}</Text>
+              </TouchableOpacity>
+
+              <TextInput
+                style={[styles.input, { height: 80 }]}
+                placeholder="Description"
+                multiline
+                value={description}
+                onChangeText={setDescription}
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Price Per Day (e.g. 15)"
+                value={pricePerDay}
+                onChangeText={setPricePerDay}
+                keyboardType="numeric"
+              />
+
+              {/* <Text style={styles.tipText}>
               Suggested price range for {categoryValue || 'this category'}:{' '}
               {priceRanges[categoryValue] || priceRanges.Default}
             </Text> */}
-            <Text style={styles.tipText}>
-              {`Suggested price range for ${categoryValue || 'this category'}: ${
-                priceRanges[categoryValue] || priceRanges.Default
-              }`}
-            </Text>
-
-            {estimatedEarnings() && (
-              <Text style={styles.earningsText}>
-                Estimated Earnings: ${estimatedEarnings()} for a {RENTAL_DAYS}-day rental (after 10%
-                fee)
+              <Text style={styles.tipText}>
+                {`Suggested price range for ${categoryValue || 'this category'}: ${
+                  priceRanges[categoryValue] || priceRanges.Default
+                }`}
               </Text>
-            )}
 
-            {uploading ? (
-              <ActivityIndicator size="large" style={{ marginTop: 20 }} />
-            ) : (
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                <Text style={styles.submitText}>{itemId ? 'Save Changes' : 'Save Item'}</Text>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+              {estimatedEarnings() && (
+                <Text style={styles.earningsText}>
+                  Estimated Earnings: ${estimatedEarnings()} for a {RENTAL_DAYS}-day rental (after
+                  10% fee)
+                </Text>
+              )}
+
+              {uploading ? (
+                <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+              ) : (
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                  <Text style={styles.submitText}>{itemId ? 'Save Changes' : 'Save Item'}</Text>
+                </TouchableOpacity>
+              )}
+              <BottomSheetModal
+                handleComponent={() => null}
+                style={styles.sheetcontainer}
+                ref={bottomSheetModalRef}
+                snapPoints={snapPoints}
+                onChange={handleSheetChanges}>
+                <BottomSheetView style={styles.contentContainer}>
+                  <Sizing
+                    selectedCategory={categoryValue}
+                    onSaveSize={(selectedSize) => {
+                      setSize(selectedSize); // ✅ Save selected size to form state
+                      bottomSheetModalRef.current?.dismiss(); // ✅ Close sheet
+                    }}
+                  />
+                </BottomSheetView>
+              </BottomSheetModal>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }
@@ -512,5 +563,45 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: 'green',
     marginBottom: 16,
+  },
+  sheetcontainer: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'lightgray',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+  },
+  contentContainer: { flex: 1, height: 270, backgroundColor: 'white' },
+  tabRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+  },
+
+  tabSelected: {
+    backgroundColor: '#000', // or your primary brand color
+    borderColor: '#000',
+  },
+
+  tabText: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '500',
+  },
+
+  tabTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });

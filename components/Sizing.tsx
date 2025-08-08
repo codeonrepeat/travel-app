@@ -1,0 +1,158 @@
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+const Sizing = ({ selectedCategory, onSaveSize }) => {
+  const [topSize, setTopSize] = useState('');
+  const [bottomSize, setBottomSize] = useState('');
+  const [shoeSize, setShoeSize] = useState('');
+  const [selectedGender, setSelectedGender] = useState('Male');
+
+  const SIZE_OPTIONS_TOP_MALE = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const SIZE_OPTIONS_TOP_FEMALE = ['XS', 'S', 'M', 'L', 'XL'];
+
+  const SIZE_OPTIONS_BOTTOM_MALE = ['28', '30', '32', '34', '36', '38', '40'];
+  const SIZE_OPTIONS_BOTTOM_FEMALE = ['0', '2', '4', '6', '8', '10', '12'];
+
+  const SIZE_OPTIONS_SHOES = ['6', '7', '8', '9', '10', '11', '12', '13', '14'];
+
+  const getSelectedSize = () => {
+    switch (selectedCategory) {
+      case 'Tops':
+        return topSize;
+      case 'Bottoms':
+        return bottomSize;
+      case 'Footwear':
+        return shoeSize;
+      default:
+        return '';
+    }
+  };
+
+  const renderSizeOptions = () => {
+    let options = [];
+
+    if (selectedCategory === 'Tops') {
+      options = selectedGender === 'Male' ? SIZE_OPTIONS_TOP_MALE : SIZE_OPTIONS_TOP_FEMALE;
+      return renderSizeButtons(options, topSize, setTopSize);
+    } else if (selectedCategory === 'Bottoms') {
+      options = selectedGender === 'Male' ? SIZE_OPTIONS_BOTTOM_MALE : SIZE_OPTIONS_BOTTOM_FEMALE;
+      return renderSizeButtons(options, bottomSize, setBottomSize);
+    } else if (selectedCategory === 'Footwear') {
+      return renderSizeButtons(SIZE_OPTIONS_SHOES, shoeSize, setShoeSize);
+    }
+
+    return null;
+  };
+
+  const renderSizeButtons = (options, selectedValue, onSelect) => (
+    <View style={styles.sizeRow}>
+      {options.map((size) => (
+        <TouchableOpacity
+          key={size}
+          style={[styles.sizeBox, selectedValue === size && styles.sizeBoxSelected]}
+          onPress={() => onSelect(size)}>
+          <Text style={[styles.sizeText, selectedValue === size && styles.sizeTextSelected]}>
+            {size}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
+  return (
+    <View style={{ padding: 16 }}>
+      {/* Gender Toggle */}
+      <View style={styles.tabRow}>
+        {['Male', 'Female'].map((gender) => (
+          <TouchableOpacity
+            key={gender}
+            style={[styles.tab, selectedGender === gender && styles.tabSelected]}
+            onPress={() => setSelectedGender(gender)}>
+            <Text style={[styles.tabText, selectedGender === gender && styles.tabTextSelected]}>
+              {gender}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Size Picker */}
+      {renderSizeOptions()}
+
+      {/* Save Button */}
+      <TouchableOpacity
+        style={{
+          marginTop: 20,
+          backgroundColor: '#000',
+          paddingVertical: 12,
+          borderRadius: 8,
+        }}
+        onPress={() => {
+          const selected = getSelectedSize();
+          if (selected) onSaveSize?.(selected);
+        }}>
+        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '600' }}>Save</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+export default Sizing;
+
+const styles = StyleSheet.create({
+  tabRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+    gap: 8,
+  },
+  tab: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: '#eee',
+  },
+  tabSelected: {
+    backgroundColor: '#000',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  tabTextSelected: {
+    color: '#fff',
+  },
+  sizeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 24,
+  },
+  sizeBox: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  sizeBoxSelected: {
+    backgroundColor: '#000',
+    borderColor: '#000',
+  },
+  sizeText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  sizeTextSelected: {
+    color: '#fff',
+  },
+  saveButton: {
+    backgroundColor: '#000',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});

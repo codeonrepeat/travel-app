@@ -51,7 +51,7 @@ export const SIZE_OPTIONS_TOP_FEMALE = ['XS', 'S', 'M', 'L', 'XL'];
 export const SIZE_OPTIONS_TOP_UNISEX = ['XS', 'S', 'M', 'L', 'XL'];
 
 export const SIZE_OPTIONS_BOTTOM_MALE = ['28', '30', '32', '34', '36', '38', '40', '42', '44'];
-export const SIZE_OPTIONS_BOTTOM_FEMALE = ['0', '2', '4', '6', '8', '10', '12'];
+export const SIZE_OPTIONS_BOTTOM_FEMALE = ['0', '2', '4', '6', '8', '10', '12', '14', '16'];
 export const SIZE_OPTIONS_BOTTOM_UNISEX = ['S', 'M', 'L', 'XL'];
 
 const USERNAME_MAX_LENGTH = 20;
@@ -236,7 +236,7 @@ export default function Onboarding({ navigation, route }) {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('Permission denied', 'Location permission is needed for this step.');
+          Alert.alert("We couldn't access your location. Please enter your city to continue:");
           return;
         }
         const loc = await Location.getCurrentPositionAsync({});
@@ -376,7 +376,7 @@ export default function Onboarding({ navigation, route }) {
   // Descriptions per step for welcoming + why (preserving your style)
   const stepDescriptions = {
     1: 'Choose a unique username so others can find you easily. This helps lenders and friends recognize you.',
-    2: "Select up to 5 style tags that best describe your personal fashion. This helps us recommend items you'll love.",
+    2: 'Select up to 5 style tags that best describe your personal fashion. This helps us recommend items for your travels',
     3: 'Your location connects you with lenders nearby for faster delivery and pick-up. It is detected automatically here.',
     4: 'Provide your clothing sizes so lenders can show you items that fit you perfectly.',
     5: 'Review all your information before finishing. You can always edit later in your profile.',
@@ -490,7 +490,7 @@ export default function Onboarding({ navigation, route }) {
               source={require('../../assets/Digital Designer.json')}
               autoPlay
               loop
-              style={{ width: 200, height: 200, marginLeft: 100, marginTop: 100 }}
+              style={{ width: 200, height: 200, marginLeft: 100, marginTop: 160 }}
             />
           </>
         );
@@ -499,7 +499,7 @@ export default function Onboarding({ navigation, route }) {
         return (
           <>
             <Text style={styles.label}>Location *</Text>
-            <Text style={styles.helperText}>{stepDescriptions[3]}</Text>
+            {/* <Text style={styles.helperText}>{stepDescriptions[3]}</Text> */}
             <TextInput
               style={styles.input}
               placeholder="Your city or area"
@@ -512,7 +512,7 @@ export default function Onboarding({ navigation, route }) {
               source={require('../../assets/Travel Icons - Map.json')}
               autoPlay
               loop
-              style={{ width: 200, height: 200, marginLeft: 85, marginTop: 225 }}
+              style={{ width: 200, height: 200, marginLeft: 85, marginTop: 355 }}
             />
           </>
         );
@@ -571,7 +571,7 @@ export default function Onboarding({ navigation, route }) {
       case 4:
         return (
           <>
-            <Text style={styles.subtitle}>{stepDescriptions[4]}</Text>
+            {/* <Text style={styles.subtitle}>{stepDescriptions[4]}</Text> */}
 
             {/* Gender Selection Tabs */}
             <View style={styles.tabRow}>
@@ -643,8 +643,13 @@ export default function Onboarding({ navigation, route }) {
                     : 'e.g. 9.5 US'
               }
               value={shoeSize}
-              onChangeText={setShoeSize}
-              keyboardType="default"
+              onChangeText={(text) => {
+                const numericText = text.replace(/[^0-9.]/g, '');
+                const decimalCount = (numericText.match(/\./g) || []).length;
+                if (decimalCount > 1) return;
+                setShoeSize(numericText);
+              }}
+              keyboardType="numeric"
               autoCapitalize="none"
             />
 
@@ -653,7 +658,7 @@ export default function Onboarding({ navigation, route }) {
               source={require('../../assets/scan body.json')}
               autoPlay
               loop
-              style={{ width: 350, height: 450, marginLeft: 15, marginTop: -20 }}
+              style={{ width: 350, height: 450, marginLeft: 15, marginTop: 30 }}
             />
           </>
         );
@@ -661,7 +666,7 @@ export default function Onboarding({ navigation, route }) {
       case 5:
         return (
           <>
-            <Text style={styles.subtitle}>{stepDescriptions[5]}</Text>
+            {/* <Text style={styles.subtitle}>{stepDescriptions[5]}</Text> */}
 
             <View style={styles.summaryItem}>
               <Text style={styles.label}>Username:</Text>

@@ -2,6 +2,8 @@ import './global.css';
 
 import { Buffer } from 'buffer';
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { TripCartProvider } from 'context/TripCartContext';
 
 import 'react-native-get-random-values';
@@ -14,8 +16,12 @@ global.Buffer = Buffer;
 
 export default function App() {
   return (
-    <TripCartProvider>
-      <RootStack />
-    </TripCartProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <TripCartProvider>
+          <RootStack />
+        </TripCartProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }

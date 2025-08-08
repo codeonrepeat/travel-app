@@ -8,6 +8,7 @@ import {
   Image,
   SafeAreaView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { supabase } from 'utils/supabase';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -71,7 +72,37 @@ export default function MyRequests({ navigation }) {
     fetchOrders();
   }, []);
 
-  // Extract unique lender usernames from order items
+  const handleCancelOrder = (orderId) => {
+    Alert.alert(
+      'Cancel Order',
+      'Are you sure you want to cancel this order? This cannot be undone.',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('orders')
+                .update({ status: 'cancelled' })
+                .eq('id', orderId);
+
+              if (error) throw error;
+
+              // Update order status locally
+              setOrders((prev) =>
+                prev.map((o) => (o.id === orderId ? { ...o, status: 'cancelled' } : o))
+              );
+            } catch (e) {
+              console.error('Cancel failed:', e.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const getLenderUsernames = (order) => {
     const usernames = order.order_items
       .map((oi) => oi.wardrobe_item?.profile?.username)
@@ -79,12 +110,11 @@ export default function MyRequests({ navigation }) {
     return [...new Set(usernames)];
   };
 
-  // Compose the info message based on status
   const getStatusInfoMessage = (status, lenders) => {
     if (status === 'pending' || status === 'accepted') {
       return `Payment accepted. Waiting for ${
         lenders.length > 1 ? lenders.join(', ') : lenders[0] || 'the lender'
-      } to accept or reject your request. Keep an eye on notifications or check back later for updates.`;
+      } to accept or reject your request.`;
     } else if (status === 'ready') {
       return `Good news! ${
         lenders.length > 1 ? lenders.join(', ') : lenders[0] || 'the lender'
@@ -92,7 +122,9 @@ export default function MyRequests({ navigation }) {
     } else if (status === 'rejected') {
       return `Unfortunately, your request was rejected by ${
         lenders.length > 1 ? lenders.join(', ') : lenders[0] || 'the lender'
-      }. You can try borrowing other items or contact the lender for details.`;
+      }.`;
+    } else if (status === 'cancelled') {
+      return 'You cancelled this request. You can browse and request new items anytime.';
     } else {
       return '';
     }
@@ -106,7 +138,6 @@ export default function MyRequests({ navigation }) {
         <Image source={{ uri: photo }} style={styles.itemImage} />
         <View style={{ flex: 1 }}>
           <Text style={styles.itemName}>{item.wardrobe_item?.name || 'Item'}</Text>
-          {/* Price */}
           <Text style={styles.priceText}>${item.price?.toFixed(2) || '0.00'}</Text>
         </View>
       </View>
@@ -116,7 +147,9 @@ export default function MyRequests({ navigation }) {
   const renderOrder = ({ item }) => {
     const lenderUsernames = getLenderUsernames(item);
     const statusMessage = getStatusInfoMessage(item.status, lenderUsernames);
-    const showInfoBox = ['pending', 'accepted', 'ready', 'rejected'].includes(item.status);
+    const showInfoBox = ['pending', 'accepted', 'ready', 'rejected', 'cancelled'].includes(
+      item.status
+    );
 
     return (
       <View style={styles.orderCard}>
@@ -145,6 +178,16 @@ export default function MyRequests({ navigation }) {
           scrollEnabled={false}
           style={{ marginTop: 12 }}
         />
+
+        {['pending', 'accepted'].includes(item.status) && (
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 }}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => handleCancelOrder(item.id)}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -196,7 +239,6 @@ export default function MyRequests({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  title: { fontSize: 24, fontWeight: '700', marginBottom: 16 },
 
   orderCard: {
     backgroundColor: '#f5f5f5',
@@ -268,6 +310,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#007AFF',
     marginTop: 6,
+  },
+
+  cancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#FF3B30',
+    borderRadius: 6,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
 
   emptyText: {

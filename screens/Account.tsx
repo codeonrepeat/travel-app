@@ -120,9 +120,22 @@ export default function Account() {
       {/* Quick Action Cards */}
       <View style={styles.cardsContainer}>
         <TouchableOpacity
-          style={styles.sectionCard}
+          style={{
+            backgroundColor: '#fff',
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 12,
+            shadowColor: '#000',
+            shadowOpacity: 0.05,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 4,
+            elevation: 2,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
           onPress={() => navigation.navigate('WardrobeEditor', { userId })}>
-          <Text style={styles.sectionTitle}>Upload New Item</Text>
+          <MaterialCommunityIcons name="plus" size={30} />
+          <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 0 }}>Upload New Item</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
