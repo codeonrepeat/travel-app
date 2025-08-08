@@ -241,7 +241,7 @@ export default function Notifications() {
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Incoming Order Requests"
+        title="Notifications.tsx"
         leftButton={
           <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 6 }}>
             <MaterialCommunityIcons name="arrow-left" size={28} color="black" />

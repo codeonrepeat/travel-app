@@ -136,12 +136,7 @@ export default function ProfileDetails() {
       <Header
         title="ProfileDetails.tsx"
         leftButton={
-          <MaterialCommunityIcons
-            onPress={() => navigation.goBack()}
-            name="arrow-left-circle"
-            size={30}
-            style={{ opacity: 0.3 }}
-          />
+          <MaterialCommunityIcons onPress={() => navigation.goBack()} name="arrow-left" size={30} />
         }
       />
       <View style={{ flex: 1 }}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const Sizing = ({ selectedCategory, onSaveSize }) => {
@@ -15,9 +15,20 @@ const Sizing = ({ selectedCategory, onSaveSize }) => {
 
   const SIZE_OPTIONS_SHOES = ['6', '7', '8', '9', '10', '11', '12', '13', '14'];
 
+  const SIZE_OPTIONS_OUTERWEAR_MALE = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+  const SIZE_OPTIONS_OUTERWEAR_FEMALE = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+  // Clear sizes when category changes to avoid invalid leftover sizes
+  useEffect(() => {
+    setTopSize('');
+    setBottomSize('');
+    setShoeSize('');
+  }, [selectedCategory]);
+
   const getSelectedSize = () => {
     switch (selectedCategory) {
       case 'Tops':
+      case 'Outerwear': // outerwear uses topSize state
         return topSize;
       case 'Bottoms':
         return bottomSize;
@@ -26,22 +37,6 @@ const Sizing = ({ selectedCategory, onSaveSize }) => {
       default:
         return '';
     }
-  };
-
-  const renderSizeOptions = () => {
-    let options = [];
-
-    if (selectedCategory === 'Tops') {
-      options = selectedGender === 'Male' ? SIZE_OPTIONS_TOP_MALE : SIZE_OPTIONS_TOP_FEMALE;
-      return renderSizeButtons(options, topSize, setTopSize);
-    } else if (selectedCategory === 'Bottoms') {
-      options = selectedGender === 'Male' ? SIZE_OPTIONS_BOTTOM_MALE : SIZE_OPTIONS_BOTTOM_FEMALE;
-      return renderSizeButtons(options, bottomSize, setBottomSize);
-    } else if (selectedCategory === 'Footwear') {
-      return renderSizeButtons(SIZE_OPTIONS_SHOES, shoeSize, setShoeSize);
-    }
-
-    return null;
   };
 
   const renderSizeButtons = (options, selectedValue, onSelect) => (
@@ -58,6 +53,37 @@ const Sizing = ({ selectedCategory, onSaveSize }) => {
       ))}
     </View>
   );
+
+  const renderSizeOptions = () => {
+    if (selectedCategory === 'Tops') {
+      const options = selectedGender === 'Male' ? SIZE_OPTIONS_TOP_MALE : SIZE_OPTIONS_TOP_FEMALE;
+      return renderSizeButtons(options, topSize, setTopSize);
+    } else if (selectedCategory === 'Bottoms') {
+      const options =
+        selectedGender === 'Male' ? SIZE_OPTIONS_BOTTOM_MALE : SIZE_OPTIONS_BOTTOM_FEMALE;
+      return renderSizeButtons(options, bottomSize, setBottomSize);
+    } else if (selectedCategory === 'Footwear') {
+      return renderSizeButtons(SIZE_OPTIONS_SHOES, shoeSize, setShoeSize);
+    } else if (selectedCategory === 'Outerwear') {
+      const options =
+        selectedGender === 'Male' ? SIZE_OPTIONS_OUTERWEAR_MALE : SIZE_OPTIONS_OUTERWEAR_FEMALE;
+      return renderSizeButtons(options, topSize, setTopSize);
+    }
+    return null;
+  };
+
+  if (selectedCategory === 'Accessories') {
+    return (
+      <View style={{ padding: 16 }}>
+        <Text style={{ fontStyle: 'italic', color: '#666', textAlign: 'center' }}>
+          No sizing required for Accessories.
+        </Text>
+        <TouchableOpacity style={styles.saveButton} onPress={() => onSaveSize?.('')}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={{ padding: 16 }}>
@@ -80,17 +106,14 @@ const Sizing = ({ selectedCategory, onSaveSize }) => {
 
       {/* Save Button */}
       <TouchableOpacity
-        style={{
-          marginTop: 20,
-          backgroundColor: '#000',
-          paddingVertical: 12,
-          borderRadius: 8,
-        }}
+        style={styles.saveButton}
         onPress={() => {
           const selected = getSelectedSize();
-          if (selected) onSaveSize?.(selected);
+          if (selected || selectedCategory === 'Accessories') {
+            onSaveSize?.(selected);
+          }
         }}>
-        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '600' }}>Save</Text>
+        <Text style={styles.saveButtonText}>Save</Text>
       </TouchableOpacity>
     </View>
   );

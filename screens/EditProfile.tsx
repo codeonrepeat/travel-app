@@ -19,6 +19,10 @@ import * as FileSystem from 'expo-file-system';
 import { supabase } from 'utils/supabase';
 import { Buffer } from 'buffer';
 import { useNavigation } from '@react-navigation/native';
+import Header from 'components/Header';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { useRef, useMemo, useCallback } from 'react';
 
 export default function EditProfile() {
   const navigation = useNavigation();
@@ -32,8 +36,39 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState('');
+  const bottomSheetRef = useRef(null);
+  const snapPoints = useMemo(() => ['50%'], []); // adjust height as needed
 
-  const styleOptions = ['Minimalist', 'Trendy', 'Sporty', 'Vintage', 'Elegant', 'Boho'];
+  const openBottomSheet = () => bottomSheetRef.current?.expand();
+  const closeBottomSheet = () => bottomSheetRef.current?.close();
+
+  const styleOptions = [
+    'Athleisure',
+    'Beachwear',
+    'Boho',
+    'Bold',
+    'Business Casual',
+    'Casual',
+    'Chic',
+    'Cocktail',
+    'Cruise',
+    'Designer',
+    'Elegant',
+    'Evening Wear',
+    'Festival',
+    'Formal',
+    'Grunge',
+    'Minimalist',
+    'Outdoor Adventure',
+    'Preppy',
+    'Resort Chic',
+    'Smart Casual',
+    'Sporty',
+    'Streetwear',
+    'Travel Comfort',
+    'Vintage',
+    'Wedding Guest',
+  ];
 
   useEffect(() => {
     async function fetchProfile() {
@@ -150,9 +185,19 @@ export default function EditProfile() {
   };
 
   const toggleTag = (tag) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+    setSelectedTags((prev) => {
+      if (prev.includes(tag)) {
+        // Remove if already selected
+        return prev.filter((t) => t !== tag);
+      } else {
+        if (prev.length >= 5) {
+          Alert.alert('Limit reached', 'You can only select up to 5 styles.');
+          return prev;
+        }
+        // Add new tag
+        return [...prev, tag];
+      }
+    });
   };
 
   if (loading) {
@@ -165,16 +210,16 @@ export default function EditProfile() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      <Header
+        title="Edit Profile"
+        leftButton={
+          <MaterialCommunityIcons name="arrow-left" size={30} onPress={() => navigation.goBack()} />
+        }
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.title}>Edit Your Profile</Text>
-
           <Text style={styles.description}>
             Update your avatar, username, bio, location, and style so others can learn more about
             you.
@@ -218,9 +263,11 @@ export default function EditProfile() {
             onChangeText={setLocation}
             placeholder="Your city"
           />
+          <View>
+            <Text style={styles.label}>Styles</Text>
+          </View>
 
-          <Text style={styles.label}>Style Tags</Text>
-          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.tagPicker}>
+          <TouchableOpacity onPress={openBottomSheet} style={styles.tagPicker}>
             <Text style={styles.tagText}>
               {selectedTags.length > 0 ? selectedTags.join(', ') : 'Select your style'}
             </Text>
@@ -233,12 +280,17 @@ export default function EditProfile() {
             <Text style={styles.buttonText}>{saving ? 'Saving...' : 'Save Changes'}</Text>
           </TouchableOpacity>
         </ScrollView>
-      </KeyboardAvoidingView>
-
-      {/* Modal for style tag selection */}
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          snapPoints={snapPoints}
+          enablePanDownToClose={true}
+          backgroundStyle={{
+            backgroundColor: '#fff',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+          }}>
+          <BottomSheetView style={{ padding: 24 }}>
             <Text style={styles.modalTitle}>Pick your style</Text>
             <View style={styles.tagGrid}>
               {styleOptions.map((tag) => (
@@ -246,6 +298,39 @@ export default function EditProfile() {
                   key={tag}
                   onPress={() => toggleTag(tag)}
                   style={[styles.tagButton, selectedTags.includes(tag) && styles.tagSelected]}>
+                  <Text
+                    style={[
+                      styles.tagButtonText,
+                      selectedTags.includes(tag) && styles.tagButtonTextSelected,
+                    ]}>
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity onPress={closeBottomSheet} style={styles.modalCloseButton}>
+              <Text style={styles.modalCloseText}>Done</Text>
+            </TouchableOpacity>
+          </BottomSheetView>
+        </BottomSheet>
+      </KeyboardAvoidingView>
+
+      {/* Modal for style tag selection */}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select up to 5 style</Text>
+            <View style={styles.tagGrid}>
+              {styleOptions.map((tag) => (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => toggleTag(tag)}
+                  disabled={selectedTags.length >= 5 && !selectedTags.includes(tag)} // disable if limit reached and not already selected
+                  style={[
+                    styles.tagButton,
+                    selectedTags.includes(tag) && styles.tagSelected,
+                    selectedTags.length >= 5 && !selectedTags.includes(tag) && { opacity: 0.5 }, // faded look
+                  ]}>
                   <Text
                     style={[
                       styles.tagButtonText,
@@ -331,8 +416,7 @@ const styles = StyleSheet.create({
   tagGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center',
+    gap: 4,
   },
   tagButton: {
     paddingVertical: 8,

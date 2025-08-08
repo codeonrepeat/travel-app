@@ -397,13 +397,15 @@ export default function WardrobeBuilder({ route, navigation }) {
                 onPress={handlePresentModalPress}
                 style={{
                   height: 50,
+                  marginBottom: 7,
                   borderRadius: 8,
                   borderColor: 'lightgray',
                   borderWidth: 1,
                   paddingHorizontal: 12,
                   justifyContent: 'center',
-                  marginBottom: 10,
-                }}>
+                  opacity: categoryValue === 'Accessories' ? 0.5 : 1, // dim if disabled
+                }}
+                disabled={categoryValue === 'Accessories'}>
                 <Text style={{ fontSize: 14 }}>{size ? `Size: ${size}` : 'Select Size'}</Text>
               </TouchableOpacity>
 

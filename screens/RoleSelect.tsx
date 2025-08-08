@@ -20,6 +20,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 import { connectStreamUser } from 'utils/connectStreamUser';
 
+import { copilot, walkthroughable, CopilotStep } from 'react-native-copilot';
+
 export default function RoleSelect() {
   const navigation = useNavigation();
 
@@ -47,6 +49,10 @@ export default function RoleSelect() {
 
   // Popup banner state
   const [showUploadHint, setShowUploadHint] = useState(false);
+
+  const WalkthroughableText = walkthroughable(Text);
+  const WalkthroughableTouchableOpacity = walkthroughable(TouchableOpacity);
+  const WalkthroughableTextInput = walkthroughable(TextInput);
 
   useEffect(() => {
     if (!currentUserId) return;
